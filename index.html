@@ -94,19 +94,19 @@
     }
     #profilePhoto:hover{transform:scale(1.1);}
 
-    #usernameDisplay{
-      color:white;
-      font-weight:bold;
-      margin-top:6px;
-      font-size:13.5px;
-      text-shadow:0 2px 5px rgba(0,0,0,0.6);
-      letter-spacing:0.4px;
-      max-width:100%;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      text-align:center;
-    }
+    #usernameDisplay {
+  color: white;
+  font-weight: bold;
+  margin-top: 6px;
+  font-size: 13px;                  /* Slightly smaller */
+  text-shadow: 0 2px 5px rgba(0,0,0,0.6);
+  letter-spacing: 0.4px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
 
     /* Dropdown Menu */
     .menu-dropdown{
@@ -139,40 +139,15 @@
 
     /* MOBILE TWEAKS */
     @media (max-width: 480px) {
-      header{
-        padding:14px 8px;
-      }
-      h1{font-size:1.6em;}
-      header p{font-size:13px;}
-
-      .hamburger{
-        width:44px;height:44px;
-      }
-      .hamburger span,
-      .hamburger span::before,
-      .hamburger span::after{
-        width:20px;height:3.5px;
-      }
-      .hamburger span::before{top:-7px;}
-      .hamburger span::after{bottom:-7px;}
-
-      #profilePhoto{
-        width:44px;height:44px;border-width:3px;
-      }
-      #usernameDisplay{
-        font-size:12.8px;
-        margin-top:4px;
-      }
-      .menu-dropdown{
-        top:60px;left:8px;
-        min-width:180px;
-      }
-    }
-
-    @media (max-width: 360px) {
-      h1{font-size:1.45em;}
-      #usernameDisplay{font-size:12px;}
-    }
+  #usernameDisplay {
+    font-size: 12px;
+  }
+}
+@media (max-width: 360px) {
+  #usernameDisplay {
+    font-size: 11px;
+  }
+}
 
     /* Rest of your styles (section, inputs, etc.) remain the same */
     .section{padding:28px;}
@@ -197,34 +172,30 @@
 <body>
   <div class="container">
     <header>
-      <!-- Controls on top of title -->
-      <div class="header-controls">
-        <div class="hamburger" onclick="toggleMenu()">
-          <span></span>
-        </div>
-        <div class="profile-area">
-          <img id="profilePhoto" src="" alt="Profile">
-          <div id="usernameDisplay">User • Main Job</div>
-        </div>
-      </div>
-
-      <h1>C𝓵𝓸𝓬𝓴 𝓲𝓷 & 𝓸𝓾𝓽 𝓽𝓻𝓪𝓬𝓴𝓮𝓻</h1>
-      <p>💗 𝓔𝓵𝓿-𝓔𝓿𝓪 💗</p>
-      <p>Pick Any Date • Live Timer • CAD $</p>
-
-      <!-- MENU DROPDOWN -->
-      <div class="menu-dropdown" id="menuDropdown">
-        <div class="menu-item" id="jobsBtn" style="background:var(--deep-pink);color:white;font-weight:bold;">Jobs</div>
-        <div class="menu-item" id="darkModeBtn">Dark Mode</div>
-        <div class="menu-item" id="changePicBtn">Change Picture</div>
-        <div class="menu-item" id="settingsBtn">Profile Settings</div>
-        <div class="menu-item" style="border-top:1px solid #ffffff;color:#ff4444;" id="clearAllSessions">Clear All Sessions</div>
-        <div class="menu-item" style="border-top:1px solid #ffffff;color:#d32f2f;" id="logoutMenu">Logout</div>
-      </div>
-
-      <input type="file" id="changePicInput" accept="image/*" style="display:none;">
-    </header>
-
+  <!-- Controls on top of title -->
+  <div class="header-controls">
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span>
+    </div>
+    <div class="profile-area">
+      <img id="profilePhoto" src="" alt="Profile">
+      <div id="usernameDisplay">User • Main Job</div>
+    </div>
+  </div>
+  <h1>C𝓵𝓸𝓬𝓴 𝓲𝓷 & 𝓸𝓾𝓽 𝓽𝓻𝓪𝓬𝓴𝓮𝓻</h1>
+  <p>💗 𝓔𝓵𝓿-𝓔𝓿𝓪 💗</p>
+  <p>Pick Any Date • Live Timer • CAD $</p>
+  <!-- MENU DROPDOWN -->
+  <div class="menu-dropdown" id="menuDropdown">
+    <div class="menu-item" id="jobsBtn" style="background:var(--deep-pink);color:white;font-weight:bold;">Jobs</div>
+    <div class="menu-item" id="darkModeBtn">Dark Mode</div>
+    <div class="menu-item" id="changePicBtn">Change Picture</div>
+    <div class="menu-item" id="settingsBtn">Profile Settings</div>
+    <div class="menu-item" style="border-top:1px solid #ffffff;color:#ff4444;" id="clearAllSessions">Clear All Sessions</div>
+    <div class="menu-item" style="border-top:1px solid #ffffff;color:#d32f2f;" id="logoutMenu">Logout</div>
+  </div>
+  <input type="file" id="changePicInput" accept="image/*" style="display:none;">
+</header>
       <!-- HAMBURGER LEFT + PROFILE RIGHT -->
       <div class="header-controls">
         <div class="hamburger" onclick="toggleMenu()">
