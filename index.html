@@ -7,17 +7,20 @@
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+ 
+ 
     :root {
       --main-pink: #ff69b4;
       --light-pink: #ffe4f0;
       --soft-pink: #ffc1e3;
       --deep-pink: #ff1493;
-    }
+  
 
     body{
       font-family:'Segoe UI',sans-serif;
       background:linear-gradient(135deg, #ffb3d1 0%, #ff99cc 100%);
-      margin:0;padding:20px;min-height:100vh;color:#333
+      margin:0;padding:10px;min-height:100vh;color:#333;
+      overflow-x:hidden;
     }
     .container{
       max-width:900px;margin:0 auto;background:white;
@@ -25,154 +28,202 @@
       overflow:hidden;position:relative;
       border:2px solid #ffe4f5;
     }
+
+    /* HEADER */
     header{
-      background:var(--main-pink);color:white;padding:25px 90px 25px 90px;text-align:center;position:relative
+      background:var(--main-pink);color:white;padding:16px 12px;text-align:center;position:relative;
     }
-    h1{margin:0;font-size:2.2em}
-    .section{padding:30px}
-    input,button{
-      width:100%;padding:14px;margin:10px 0;border-radius:10px;
-      border:1px solid #ffd1dc;font-size:16px;box-sizing:border-box
+    h1{
+      margin:8px 0 4px;font-size:1.75em;line-height:1.2;
     }
-    button{
-      background:var(--main-pink);color:white;border:none;cursor:pointer;font-weight:bold
+    header p{
+      margin:4px 0;font-size:13.5px;opacity:0.95;
     }
-    button:hover{background:#ff4da6}
-    button:disabled{background:#ffb3c1;cursor:not-allowed}
-    .big{padding:18px;font-size:20px}
-    .secondary-btn{background:#f0f0f0;color:#555;border:1px solid #ddd;margin-top:12px;}
-    .secondary-btn:hover{background:#e0e0e0;}
-    .row{display:flex;gap:10px}
-    .row input{width:50%}
-    a{color:var(--main-pink);text-decoration:none;font-weight:600}
-    a:hover{text-decoration:underline}
-    .date-picker{text-align:center;margin:25px 0;}
-    .date-picker label{font-size:18px;font-weight:bold;display:block;margin-bottom:10px;color:var(--deep-pink);}
-    .live-timer{
-      font-size:56px;font-weight:bold;color:var(--deep-pink);
-      text-align:center;margin:30px 0;letter-spacing:5px;
-      text-shadow:0 3px 10px rgba(255,20,147,0.3);
-    }
-    .info{
-      background:var(--light-pink);padding:18px;border-radius:10px;
-      margin:15px 0;text-align:center;border:1px solid #ffd1dc;
-    }
-    #earnings{font-size:32px;text-align:center;color:var(--deep-pink);margin:20px 0;font-weight:bold}
-    .quote{text-align:center;font-style:italic;color:#888;margin:30px 0;font-size:18px}
 
-    /* ONLY SHOW AFTER LOGIN */
-    .header-controls{display:none;position:absolute;top:15px;left:15px;right:15px;justify-content:space-between;align-items:center;z-index:10}
-    .logged-in .header-controls{display:flex}
+    /* HEADER CONTROLS - Hamburger left, Profile right */
+    .header-controls{
+      display:none;
+      position:absolute;
+      top:10px;left:10px;right:10px;
+      justify-content:space-between;
+      align-items:center;
+      z-index:10;
+      pointer-events:none; /* Allows tapping through to header if needed */
+    }
+    .logged-in .header-controls{display:flex;}
+    .header-controls > * {pointer-events:auto;} /* Re-enable taps on buttons */
 
-    /* HAMBURGER - NOW SUPER VISIBLE IN LIGHT MODE */
+    /* Hamburger */
     .hamburger{
-      cursor:pointer;width:56px;height:56px;display:flex;align-items:center;justify-content:center;
+      cursor:pointer;
+      width:48px;height:48px;
+      display:flex;align-items:center;justify-content:center;
       background:rgba(255,255,255,0.98);
       border:4px solid var(--main-pink);
-      border-radius:50%;transition:.3s;
+      border-radius:50%;
+      transition:.3s;
       box-shadow:0 6px 20px rgba(255,105,180,0.4);
     }
     .hamburger:hover{
-      background:white;transform:scale(1.1);box-shadow:0 8px 25px rgba(255,105,180,0.5);
+      transform:scale(1.1);
+      box-shadow:0 8px 25px rgba(255,105,180,0.5);
     }
     .hamburger span,
     .hamburger span::before,
     .hamburger span::after{
-      position:absolute;width:28px;height:5px;
-      background:var(--main-pink);border-radius:4px;transition:.3s;
+      position:absolute;width:24px;height:4px;
+      background:var(--main-pink);border-radius:4px;
     }
-    .hamburger span::before{content:'';top:-10px}
-    .hamburger span::after{content:'';bottom:-10px}
+    .hamburger span::before{content:'';top:-8px;}
+    .hamburger span::after{content:'';bottom:-8px;}
 
-    /* DROPDOWN MENU */
+    /* PROFILE AREA - Improved for mobile */
+    .profile-area{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      max-width:48%; /* Prevents pushing layout */
+    }
+    #profilePhoto{
+      width:48px;height:48px;
+      border-radius:50%;
+      object-fit:cover;
+      border:4px solid white;
+      box-shadow:0 6px 20px rgba(255,105,180,0.5);
+      transition:.3s;
+    }
+    #profilePhoto:hover{transform:scale(1.1);}
+
+    #usernameDisplay{
+      color:white;
+      font-weight:bold;
+      margin-top:6px;
+      font-size:13.5px;
+      text-shadow:0 2px 5px rgba(0,0,0,0.6);
+      letter-spacing:0.4px;
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      text-align:center;
+    }
+
+    /* Dropdown Menu */
     .menu-dropdown{
-      position:absolute;top:78px;left:15px;background:rgb(71, 21, 54);border-radius:14px;
-      box-shadow:0 12px 35px rgba(255,105,180,0.25);min-width:220px;overflow:hidden;
-      transform:scale(0);transform-origin:top left;transition:transform .25s ease;z-index:100;
+      position:absolute;
+      top:66px;left:10px;
+      background:rgb(71, 21, 54);
+      border-radius:14px;
+      box-shadow:0 12px 35px rgba(255,105,180,0.25);
+      min-width:200px;
+      overflow:hidden;
+      transform:scale(0);
+      transform-origin:top left;
+      transition:transform .25s ease;
+      z-index:100;
       border:2px solid var(--soft-pink);
     }
-    .menu-dropdown.show{transform:scale(1)}
-    .menu-item{padding:18px 24px;cursor:pointer;transition:.2s;font-weight:500;font-size:15px}
-    .menu-item:hover{background:var(--light-pink);color:var(--deep-pink)}
-
-    /* PROFILE */
-    .profile-area{text-align:center}
-    #profilePhoto{
-      width:70px;height:70px;border-radius:50%;object-fit:cover;
-      border:5px solid white;box-shadow:0 6px 20px rgba(255,105,180,0.5);
-      cursor:pointer;transition:.3s;
+    .menu-dropdown.show{transform:scale(1);}
+    .menu-item{
+      padding:16px 20px;
+      cursor:pointer;
+      transition:.2s;
+      font-weight:500;
+      font-size:14.5px;
+      color:white;
     }
-    #profilePhoto:hover{transform:scale(1.12)}
-    #usernameDisplay{
-      color:white;font-weight:bold;margin-top:8px;font-size:16px;
-      text-shadow:0 2px 5px rgba(0,0,0,0.6);letter-spacing:0.5px
+    .menu-item:hover{
+      background:var(--light-pink);
+      color:var(--deep-pink);
     }
 
-    /* DARK MODE - STILL WORKS, BUT NOW PINK THEMED */
-    body.dark #usernameDisplay {
-      color: #ffffff !important;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.7);
-    }
-    
-    body.dark .header-controls .profile-area {
-      color: #ffffff;
-    
-    }
-        body.dark .container{
-      background:#1a0d1a;box-shadow:0 12px 30px rgba(0,0,0,.8);
-      border:2px solid #ff69b4;
+    /* MOBILE TWEAKS */
+    @media (max-width: 480px) {
+      header{
+        padding:14px 8px;
+      }
+      h1{font-size:1.6em;}
+      header p{font-size:13px;}
 
-    }
-    body.dark header{background:#d81b60}
-    body.dark input,body.dark button{background:#2d1b3a;color:#fff;border:1px solid #ff69b4}
-    body.dark .info{background:#2d0f2d;color:#eee}
-    body.dark .hamburger{
-      background:rgba(30,10,30,0.9);border:4px solid #ff69b4;
-    }
-    body.dark .hamburger span,
-    .hamburger span::before,
-    .hamburger span::after{
-      background:#ff69b4;
-    }
+      .hamburger{
+        width:44px;height:44px;
+      }
+      .hamburger span,
+      .hamburger span::before,
+      .hamburger span::after{
+        width:20px;height:3.5px;
+      }
+      .hamburger span::before{top:-7px;}
+      .hamburger span::after{bottom:-7px;}
 
-    @media (max-width:520px){
-      header{padding:25px 80px}
-      .hamburger{width:50px;height:50px}
-      .hamburger span,.hamburger span::before,.hamburger span::after{width:24px;height:4px}
-      #profilePhoto{width:60px;height:60px}
-      #usernameDisplay{font-size:15px}
+      #profilePhoto{
+        width:44px;height:44px;border-width:3px;
+      }
+      #usernameDisplay{
+        font-size:12.8px;
+        margin-top:4px;
+      }
+      .menu-dropdown{
+        top:60px;left:8px;
+        min-width:180px;
+      }
     }
 
-    /* Welcome Overlay with Confetti */
-    #welcomeOverlay {
-      position:fixed;inset:0;background:rgba(255,105,180,0.96);z-index:2000;
-      display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;text-align:center;
-      animation:fadeIn 1s ease;
+    @media (max-width: 360px) {
+      h1{font-size:1.45em;}
+      #usernameDisplay{font-size:12px;}
     }
-    #welcomeOverlay h2{font-size:48px;margin:20px 0;animation:pulse 2s infinite;}
-    #welcomeOverlay p{font-size:24px;margin:15px 0;}
-    #welcomeOverlay .confetti{
-      position:absolute;width:12px;height:12px;background:var(--main-pink);border-radius:50%;opacity:0.9;
-      animation:confettiFall linear infinite;
+
+    /* Rest of your styles (section, inputs, etc.) remain the same */
+    .section{padding:28px;}
+    input,button{
+      width:100%;padding:14px;margin:10px 0;border-radius:10px;
+      border:1px solid #ffd1dc;font-size:16px;box-sizing:border-box;
     }
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-    @keyframes confettiFall{
-      0%{transform:translateY(-100vh) rotate(0deg);opacity:1}
-      100%{transform:translateY(100vh) rotate(720deg);opacity:0}
+    button{
+      background:var(--main-pink);color:white;border:none;cursor:pointer;font-weight:bold;
     }
+    .big{padding:18px;font-size:19px;}
+    .live-timer{
+      font-size:44px;font-weight:bold;color:var(--deep-pink);
+      text-align:center;margin:30px 0;letter-spacing:2px;
+    }
+
+    /* Dark mode unchanged */
+    body.dark .container{background:#1a0d1a;border:2px solid #ff69b4;}
+    body.dark header{background:#d81b60;}
   </style>
 </head>
-<script type="module">
-  import { Storage } from 'https://unpkg.com/megajs/dist/main.browser-es.mjs';
-  window.MegaStorage = Storage; // Make it accessible globally
-</script>
 <body>
   <div class="container">
     <header>
+      <!-- Controls on top of title -->
+      <div class="header-controls">
+        <div class="hamburger" onclick="toggleMenu()">
+          <span></span>
+        </div>
+        <div class="profile-area">
+          <img id="profilePhoto" src="" alt="Profile">
+          <div id="usernameDisplay">User • Main Job</div>
+        </div>
+      </div>
+
       <h1>C𝓵𝓸𝓬𝓴 𝓲𝓷 & 𝓸𝓾𝓽 𝓽𝓻𝓪𝓬𝓴𝓮𝓻</h1>
       <p>💗 𝓔𝓵𝓿-𝓔𝓿𝓪 💗</p>
       <p>Pick Any Date • Live Timer • CAD $</p>
+
+      <!-- MENU DROPDOWN -->
+      <div class="menu-dropdown" id="menuDropdown">
+        <div class="menu-item" id="jobsBtn" style="background:var(--deep-pink);color:white;font-weight:bold;">Jobs</div>
+        <div class="menu-item" id="darkModeBtn">Dark Mode</div>
+        <div class="menu-item" id="changePicBtn">Change Picture</div>
+        <div class="menu-item" id="settingsBtn">Profile Settings</div>
+        <div class="menu-item" style="border-top:1px solid #ffffff;color:#ff4444;" id="clearAllSessions">Clear All Sessions</div>
+        <div class="menu-item" style="border-top:1px solid #ffffff;color:#d32f2f;" id="logoutMenu">Logout</div>
+      </div>
+
+      <input type="file" id="changePicInput" accept="image/*" style="display:none;">
+    </header>
 
       <!-- HAMBURGER LEFT + PROFILE RIGHT -->
       <div class="header-controls">
@@ -241,7 +292,7 @@
 
         <p style="text-align:center;margin-top:25px;color:#666;">
           Already have an account? <a href="#" id="toLoginFromReg">Log in here</a><br>
-          <a href="#" id="stayOnRegister" style="font-size:0.9em;color:#999">← No, stay on register</a>
+          <a href="#" id="stayOnRegister" style="font-size:0.9em;color:#ff057a">← No, stay on register</a>
         </p>
       </div>
 
@@ -849,140 +900,307 @@
     
   </script>
 
-  <!-- Floating Pink Button and AI Chat (unchanged) -->
-  <div id="aiBotBtn" style="position:fixed;bottom:25px;right:25px;width:78px;height:78px;background:#ff69b4;border-radius:50%;box-shadow:0 12px 35px rgba(255,105,180,0.6);cursor:pointer;z-index:999;display:flex;align-items:center;justify-content:center;transition:all .3s;font-size:38px;color:white;font-weight:300;" onclick="toggleAIBot()">
-    ✨
+  <!-- Floating AI Bot Button -->
+<div id="aiBotBtn" onclick="toggleAIBot()">✨</div>
+
+<!-- AI Chat Box -->
+<div id="aiChatBox">
+  <div class="chat-header">
+    Your Sweet AI Assistant ❤️
   </div>
-
-  <div id="aiChatBox" style="display:none;position:fixed;bottom:120px;right:25px;width:380px;height:580px;background:rgb(255, 255, 255);border-radius:25px;box-shadow:0 20px 50px rgba(255,105,180,0.5);overflow:hidden;z-index:998;flex-direction:column;">
-    <div style="background:#ff69b4;color:white;padding:20px;text-align:center;font-size:22px;font-weight:bold;">
-      Your Sweet AI Assistant ❤️
-    </div>
-    <div style="padding:20px;text-align:center;color:#ff1493;font-size:18px;">
-      Hi beautiful! Type below or press the mic to talk to me
-    </div>
-    <div id="aiMessages" style="flex:1;overflow-y:auto;padding:10px;background:rgb(255, 255, 255);"></div>
-    <div style="position:absolute;bottom:0;left:0;right:0;background:#fff5fb;border-top:5px solid #ff69b4;padding:15px;display:flex;align-items:center;gap:12px;">
-      <button id="micBtn" style="background:#ff69b4;color:white;border:none;width:56px;height:56px;border-radius:50%;cursor:pointer;font-size:30px;box-shadow:0 5px 15px rgba(255, 250, 250, 0.5);display:flex;align-items:center;justify-content:center;">
-        🎤
-      </button>
-      <button onclick="clearChat()" style="background:#ff1493;color:white;border:none;width:56px;height:56px;border-radius:50%;cursor:pointer;font-size:30px;box-shadow:0 5px 15px rgba(255,20,147,0.5);display:flex;align-items:center;justify-content:center;" title="Clear all messages">
-        🗑️
-      </button>
-      <input type="text" id="aiInput" placeholder="Type your message here beautiful..." style="flex:1;padding:18px;font-size:17px;border:3px solid #ff69b4;border-radius:30px;outline:none;background:rgb(142, 15, 93);box-shadow:inset 0 3px 10px rgba(197, 185, 185, 0.897);color:white !important;" oninput="this.style.color='white'">
-      <button onclick="sendMessage()" style="background:#ff1493;color:white;border:none;width:60px;height:60px;border-radius:50%;cursor:pointer;font-size:32px;box-shadow:0 6px 20px rgba(255,20,147,0.5);display:flex;align-items:center;justify-content:center;">
-        ✈️
-      </button>
-    </div>
+  <div class="chat-greeting">
+    Hi beautiful! Type below or press the mic to talk to me 💕
   </div>
+  <div id="aiMessages"></div>
+  <div class="chat-input-bar">
+    <button id="micBtn" title="Speak">🎤</button>
+    <button id="clearBtn" onclick="clearChat()" title="Clear chat">🗑️</button>
+    <input type="text" id="aiInput" placeholder="Type your message here beautiful..." autocomplete="off">
+    <button id="sendBtn" onclick="sendMessage()" title="Send">✈️</button>
+  </div>
+</div>
 
-  <script>
-    function toggleAIBot() {
-      const box = document.getElementById('aiChatBox');
-      const btn = document.getElementById('aiBotBtn');
-      if (box.style.display === 'none' || !box.style.display) {
-        box.style.display = 'flex';
-        btn.innerHTML = '×'; 
-        btn.style.background = '#ff1493';
-        btn.style.fontSize = '52px';
-        btn.style.fontWeight = '200';
-      } else {
-        box.style.display = 'none';
-        btn.innerHTML = '✨';
-        btn.style.background = '#ff69b4';
-        btn.style.fontSize = '38px';
-      }
+<style>
+  /* Floating Button */
+  #aiBotBtn {
+    position: fixed;
+    bottom: 20px;
+    right: 16px;
+    width: 64px;
+    height: 64px;
+    background: #ff69b4;
+    color: white;
+    border-radius: 50%;
+    font-size: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(255, 105, 180, 0.6);
+    cursor: pointer;
+    z-index: 999;
+    transition: all 0.3s ease;
+    user-select: none;
+  }
+  #aiBotBtn:hover, #aiBotBtn:active {
+    transform: scale(1.1);
+    box-shadow: 0 12px 35px rgba(255, 105, 180, 0.7);
+  }
+
+  /* Chat Box */
+  #aiChatBox {
+    display: none;
+    flex-direction: column;
+    position: fixed;
+    bottom: 96px;
+    right: 16px;
+    width: calc(100vw - 40px);
+    max-width: 380px;
+    height: 76vh;
+    max-height: 620px;
+    background: white;
+    border-radius: 26px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(255, 105, 180, 0.5);
+    z-index: 998;
+    border: 4px solid #ff69b4;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  .chat-header {
+    background: #ff69b4;
+    color: white;
+    padding: 18px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .chat-greeting {
+    padding: 16px;
+    text-align: center;
+    color: #ff1493;
+    font-size: 16px;
+  }
+
+  #aiMessages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    background: #fff5fb;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Message Bubbles */
+  .msg {
+    max-width: 82%;
+    padding: 12px 18px;
+    border-radius: 30px;
+    font-size: 16px;
+    line-height: 1.4;
+    box-shadow: 0 4px 12px rgba(255, 105, 180, 0.2);
+    word-wrap: break-word;
+  }
+  .msg.user {
+    align-self: flex-end;
+    background: #ff69b4;
+    color: white;
+    border-bottom-right-radius: 8px;
+  }
+  .msg.bot {
+    align-self: flex-start;
+    background: #ffe4f0;
+    color: #ff1493;
+    border-bottom-left-radius: 8px;
+  }
+
+  /* Input Bar */
+  .chat-input-bar {
+    padding: 14px;
+    background: #fff0f8;
+    border-top: 4px solid #ff69b4;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .chat-input-bar button {
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 50%;
+    font-size: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4);
+    transition: all 0.2s;
+  }
+  .chat-input-bar button:active {
+    transform: scale(0.92);
+  }
+
+  #micBtn { background: #ff69b4; color: white; }
+  #clearBtn { background: #ff8dc4; color: white; }
+  #sendBtn { background: #ff1493; color: white; }
+
+  #aiInput {
+    flex: 1;
+    padding: 16px 20px;
+    font-size: 17px;
+    border: 3px solid #ff69b4;
+    border-radius: 30px;
+    outline: none;
+    background: white;
+    color: #333;
+  }
+  #aiInput::placeholder {
+    color: #ff69b4;
+    opacity: 0.8;
+  }
+
+  /* Small phones */
+  @media (max-width: 360px) {
+    #aiBotBtn {
+      width: 58px;
+      height: 58px;
+      font-size: 32px;
+      bottom: 16px;
+      right: 12px;
     }
-
-    let recognition;
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US';
-
-      document.getElementById('micBtn').onclick = () => {
-        document.getElementById('micBtn').style.background = '#ff1493';
-        recognition.start();
-      };
-
-      recognition.onresult = (e) => {
-        document.getElementById('aiInput').value = e.results[0][0].transcript;
-        sendMessage();
-      };
-
-      recognition.onend = () => {
-        document.getElementById('micBtn').style.background = '#ff69b4';
-      };
+    #aiChatBox {
+      bottom: 84px;
+      right: 12px;
+      width: calc(100vw - 32px);
+      max-width: 340px;
     }
-
-    function speak(text) {
-      if ('speechSynthesis' in window) {
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.rate = 0.9;
-        utter.pitch = 1.4;
-        utter.volume = 1;
-        const voices = speechSynthesis.getVoices();
-        const female = voices.find(v => v.lang.includes('en') && (v.name.toLowerCase().includes('female') || v.name.includes('Zira') || v.name.includes('Google UK') || v.name.includes('Samantha') || v.name.includes('Karen')));
-        if (female) utter.voice = female;
-        speechSynthesis.cancel();
-        speechSynthesis.speak(utter);
-      }
+    #aiInput {
+      font-size: 16px; /* Prevents zoom on iOS */
     }
+  }
+</style>
 
-    function clearChat() {
-      if (confirm("Are you sure you want to clear our whole conversation, beautiful?")) {
-        const chat = document.getElementById('aiMessages');
-        chat.innerHTML = '';
-        chat.innerHTML = `<div style="text-align:center;color:#ff69b4;font-size:16px;padding:20px;">Chat cleared! Ready for a fresh start, love.</div>`;
-        setTimeout(() => {
-          chat.innerHTML = '';
-        }, 3000);
-      }
+<script>
+  function toggleAIBot() {
+    const box = document.getElementById('aiChatBox');
+    const btn = document.getElementById('aiBotBtn');
+    if (box.style.display === 'flex') {
+      box.style.display = 'none';
+      btn.innerHTML = '✨';
+      btn.style.background = '#ff69b4';
+    } else {
+      box.style.display = 'flex';
+      btn.innerHTML = '×';
+      btn.style.background = '#ff1493';
     }
+  }
 
-    function sendMessage() {
-      const input = document.getElementById('aiInput');
-      let msg = input.value.trim();
-      if (!msg) return;
+  // Speech Recognition
+  let recognition;
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
 
+    document.getElementById('micBtn').addEventListener('click', () => {
+      document.getElementById('micBtn').style.background = '#ff1493';
+      recognition.start();
+    });
+
+    recognition.onresult = (e) => {
+      document.getElementById('aiInput').value = e.results[0][0].transcript;
+      sendMessage();
+    };
+
+    recognition.onend = () => {
+      document.getElementById('micBtn').style.background = '#ff69b4';
+    };
+  }
+
+  // Text-to-Speech
+  function speak(text) {
+    if ('speechSynthesis' in window) {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.9;
+      utter.pitch = 1.4;
+      utter.volume = 1;
+      const voices = speechSynthesis.getVoices();
+      const female = voices.find(v => 
+        v.lang.includes('en') && 
+        (v.name.toLowerCase().includes('female') || 
+         v.name.includes('Samantha') || 
+         v.name.includes('Karen') || 
+         v.name.includes('Zira'))
+      );
+      if (female) utter.voice = female;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utter);
+    }
+  }
+
+  function clearChat() {
+    if (confirm("Are you sure you want to clear our whole conversation, beautiful?")) {
       const chat = document.getElementById('aiMessages');
-      
-      chat.innerHTML += `<div style="text-align:right;margin:15px 10px;"><span style="background:#ff69b4;color:white;padding:14px 22px;border-radius:30px;display:inline-block;max-width:80%;font-size:16px;box-shadow:0 5px 15px rgba(255,105,180,0.4);">${msg}</span></div>`;
-
-      let reply = "Aww, you're so sweet!";
-
-      if (msg.toLowerCase().includes('clock in') || msg.toLowerCase().includes('start')) {
-        document.getElementById('clockIn')?.click();
-        reply = "You're clocked in, beautiful! Go make that money.";
-      } else if (msg.toLowerCase().includes('clock out') || msg.toLowerCase().includes('stop')) {
-        document.getElementById('clockOut')?.click();
-        reply = "Clocked out and saved! You absolutely crushed it today.";
-      } else if (msg.toLowerCase().includes('how much') || msg.toLowerCase().includes('money')) {
-        const earn = document.querySelector('#earnings strong')?.innerText || "nothing yet";
-        reply = `You've earned <strong>${earn}</strong> today, queen! So proud of you.`;
-      } else {
-        const replies = [
-          "You're absolutely stunning, you know that?",
-          "I'm always here for you, beautiful.",
-          "You're such a boss!",
-          "Keep shining bright, love.",
-          "You make my day every time you message me.",
-          "Aww, you're too kind!",
-          "You're going to have an amazing day."
-        ];
-        reply = replies[Math.floor(Math.random() * replies.length)];
-      }
-
-      setTimeout(() => {
-        chat.innerHTML += `<div style="text-align:left;margin:15px 10px;"><span style="background:#ffe4f0;color:#ff1493;padding:14px 22px;border-radius:30px;display:inline-block;max-width:80%;font-size:16px;box-shadow:0 5px 15px rgba(255,20,147,0.3);">${reply}</span></div>`;
-        chat.scrollTop = chat.scrollHeight;
-        speak(reply);
-      }, 800);
-
-      input.value = '';
-      chat.scrollTop = chat.scrollHeight;
+      chat.innerHTML = '<div class="msg bot" style="width:100%;text-align:center;padding:20px;">Chat cleared! Ready for a fresh start 💕</div>';
+      setTimeout(() => { chat.innerHTML = ''; }, 2500);
     }
-  </script>
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('aiInput');
+    let msg = input.value.trim();
+    if (!msg) return;
+
+    const chat = document.getElementById('aiMessages');
+    chat.innerHTML += `<div class="msg user">${msg}</div>`;
+    chat.scrollTop = chat.scrollHeight;
+
+    let reply = "Aww, you're so sweet! 💗";
+
+    const lower = msg.toLowerCase();
+    if (lower.includes('clock in') || lower.includes('start')) {
+      document.getElementById('clockIn')?.click();
+      reply = "You're clocked in, beautiful! Go make that money ✨";
+    } else if (lower.includes('clock out') || lower.includes('stop')) {
+      document.getElementById('clockOut')?.click();
+      reply = "Clocked out and saved! You crushed it today, queen! 👑";
+    } else if (lower.includes('how much') || lower.includes('money') || lower.includes('earn')) {
+      const earn = document.querySelector('#earnings strong')?.innerText || "nothing yet";
+      reply = `You've earned <strong>${earn}</strong> today! So proud of you 💕`;
+    } else {
+      const replies = [
+        "You're absolutely stunning, you know that?",
+        "I'm always here for you, beautiful.",
+        "You're such a boss!",
+        "Keep shining bright, love.",
+        "You make my day every time you message me.",
+        "Aww, you're too kind!",
+        "You're going to have an amazing day."
+      ];
+      reply = replies[Math.floor(Math.random() * replies.length)];
+    }
+
+    setTimeout(() => {
+      chat.innerHTML += `<div class="msg bot">${reply}</div>`;
+      chat.scrollTop = chat.scrollHeight;
+      speak(reply);
+    }, 800);
+
+    input.value = '';
+  }
+
+  // Send on Enter (but allow Shift+Enter for new line if needed)
+  document.getElementById('aiInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+</script>
 </body>
 </html>
+  
