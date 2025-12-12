@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Work Tracker Pro • Full Date + Live Timer</title>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --main-pink: #ff69b4;
+      --light-pink: #ffe4f0;
+      --soft-pink: #ffc1e3;
+      --deep-pink: #ff1493;
+    }
+
+    body{
+      font-family:'Segoe UI',sans-serif;
+      background:linear-gradient(135deg, #ffb3d1 0%, #ff99cc 100%);
+      margin:0;padding:20px;min-height:100vh;color:#333
+    }
+    .container{
+      max-width:900px;margin:0 auto;background:white;
+      border-radius:20px;box-shadow:0 15px 40px rgba(255,105,180,0.3);
+      overflow:hidden;position:relative;
+      border:2px solid #ffe4f5;
+    }
+    header{
+      background:var(--main-pink);color:white;padding:25px 90px 25px 90px;text-align:center;position:relative
+    }
+    h1{margin:0;font-size:2.2em}
+    .section{padding:30px}
+    input,button{
+      width:100%;padding:14px;margin:10px 0;border-radius:10px;
+      border:1px solid #ffd1dc;font-size:16px;box-sizing:border-box
+    }
+    button{
+      background:var(--main-pink);color:white;border:none;cursor:pointer;font-weight:bold
+    }
+    button:hover{background:#ff4da6}
+    button:disabled{background:#ffb3c1;cursor:not-allowed}
+    .big{padding:18px;font-size:20px}
+    .secondary-btn{background:#f0f0f0;color:#555;border:1px solid #ddd;margin-top:12px;}
+    .secondary-btn:hover{background:#e0e0e0;}
+    .row{display:flex;gap:10px}
+    .row input{width:50%}
+    a{color:var(--main-pink);text-decoration:none;font-weight:600}
+    a:hover{text-decoration:underline}
+    .date-picker{text-align:center;margin:25px 0;}
+    .date-picker label{font-size:18px;font-weight:bold;display:block;margin-bottom:10px;color:var(--deep-pink);}
+    .live-timer{
+      font-size:56px;font-weight:bold;color:var(--deep-pink);
+      text-align:center;margin:30px 0;letter-spacing:5px;
+      text-shadow:0 3px 10px rgba(255,20,147,0.3);
+    }
+    .info{
+      background:var(--light-pink);padding:18px;border-radius:10px;
+      margin:15px 0;text-align:center;border:1px solid #ffd1dc;
+    }
+    #earnings{font-size:32px;text-align:center;color:var(--deep-pink);margin:20px 0;font-weight:bold}
+    .quote{text-align:center;font-style:italic;color:#888;margin:30px 0;font-size:18px}
+
+    /* ONLY SHOW AFTER LOGIN */
+    .header-controls{display:none;position:absolute;top:15px;left:15px;right:15px;justify-content:space-between;align-items:center;z-index:10}
+    .logged-in .header-controls{display:flex}
+
+    /* HAMBURGER - NOW SUPER VISIBLE IN LIGHT MODE */
+    .hamburger{
+      cursor:pointer;width:56px;height:56px;display:flex;align-items:center;justify-content:center;
+      background:rgba(255,255,255,0.98);
+      border:4px solid var(--main-pink);
+      border-radius:50%;transition:.3s;
+      box-shadow:0 6px 20px rgba(255,105,180,0.4);
+    }
+    .hamburger:hover{
+      background:white;transform:scale(1.1);box-shadow:0 8px 25px rgba(255,105,180,0.5);
+    }
+    .hamburger span,
+    .hamburger span::before,
+    .hamburger span::after{
+      position:absolute;width:28px;height:5px;
+      background:var(--main-pink);border-radius:4px;transition:.3s;
+    }
+    .hamburger span::before{content:'';top:-10px}
+    .hamburger span::after{content:'';bottom:-10px}
+
+    /* DROPDOWN MENU */
+    .menu-dropdown{
+      position:absolute;top:78px;left:15px;background:rgb(71, 21, 54);border-radius:14px;
+      box-shadow:0 12px 35px rgba(255,105,180,0.25);min-width:220px;overflow:hidden;
+      transform:scale(0);transform-origin:top left;transition:transform .25s ease;z-index:100;
+      border:2px solid var(--soft-pink);
+    }
+    .menu-dropdown.show{transform:scale(1)}
+    .menu-item{padding:18px 24px;cursor:pointer;transition:.2s;font-weight:500;font-size:15px}
+    .menu-item:hover{background:var(--light-pink);color:var(--deep-pink)}
+
+    /* PROFILE */
+    .profile-area{text-align:center}
+    #profilePhoto{
+      width:70px;height:70px;border-radius:50%;object-fit:cover;
+      border:5px solid white;box-shadow:0 6px 20px rgba(255,105,180,0.5);
+      cursor:pointer;transition:.3s;
+    }
+    #profilePhoto:hover{transform:scale(1.12)}
+    #usernameDisplay{
+      color:white;font-weight:bold;margin-top:8px;font-size:16px;
+      text-shadow:0 2px 5px rgba(0,0,0,0.6);letter-spacing:0.5px
+    }
+
+    /* DARK MODE - STILL WORKS, BUT NOW PINK THEMED */
+    body.dark #usernameDisplay {
+      color: #ffffff !important;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    }
+    
+    body.dark .header-controls .profile-area {
+      color: #ffffff;
+    
+    }
+        body.dark .container{
+      background:#1a0d1a;box-shadow:0 12px 30px rgba(0,0,0,.8);
+      border:2px solid #ff69b4;
+
+    }
+    body.dark header{background:#d81b60}
+    body.dark input,body.dark button{background:#2d1b3a;color:#fff;border:1px solid #ff69b4}
+    body.dark .info{background:#2d0f2d;color:#eee}
+    body.dark .hamburger{
+      background:rgba(30,10,30,0.9);border:4px solid #ff69b4;
+    }
+    body.dark .hamburger span,
+    .hamburger span::before,
+    .hamburger span::after{
+      background:#ff69b4;
+    }
+
+    @media (max-width:520px){
+      header{padding:25px 80px}
+      .hamburger{width:50px;height:50px}
+      .hamburger span,.hamburger span::before,.hamburger span::after{width:24px;height:4px}
+      #profilePhoto{width:60px;height:60px}
+      #usernameDisplay{font-size:15px}
+    }
+
+    /* Welcome Overlay with Confetti */
+    #welcomeOverlay {
+      position:fixed;inset:0;background:rgba(255,105,180,0.96);z-index:2000;
+      display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;text-align:center;
+      animation:fadeIn 1s ease;
+    }
+    #welcomeOverlay h2{font-size:48px;margin:20px 0;animation:pulse 2s infinite;}
+    #welcomeOverlay p{font-size:24px;margin:15px 0;}
+    #welcomeOverlay .confetti{
+      position:absolute;width:12px;height:12px;background:var(--main-pink);border-radius:50%;opacity:0.9;
+      animation:confettiFall linear infinite;
+    }
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+    @keyframes confettiFall{
+      0%{transform:translateY(-100vh) rotate(0deg);opacity:1}
+      100%{transform:translateY(100vh) rotate(720deg);opacity:0}
+    }
+  </style>
+</head>
+<script type="module">
+  import { Storage } from 'https://unpkg.com/megajs/dist/main.browser-es.mjs';
+  window.MegaStorage = Storage; // Make it accessible globally
+</script>
+<body>
+  <div class="container">
+    <header>
+      <h1>C𝓵𝓸𝓬𝓴 𝓲𝓷 & 𝓸𝓾𝓽 𝓽𝓻𝓪𝓬𝓴𝓮𝓻</h1>
+      <p>💗 𝓔𝓵𝓿-𝓔𝓿𝓪 💗</p>
+      <p>Pick Any Date • Live Timer • CAD $</p>
+
+      <!-- HAMBURGER LEFT + PROFILE RIGHT -->
+      <div class="header-controls">
+        <div class="hamburger" onclick="toggleMenu()">
+          <span></span>
+        </div>
+        <div class="profile-area">
+          <img id="profilePhoto" src="" alt="Profile">
+          <div id="usernameDisplay">User</div>
+        </div>
+      </div>
+
+      <!-- MENU DROPDOWN -->
+      <div class="menu-dropdown" id="menuDropdown">
+        <div class="menu-item" id="jobsBtn" style="background:var(--deep-pink);color:white;font-weight:bold;">Jobs</div>
+        <div class="menu-item" id="darkModeBtn">Dark Mode</div>
+        <div class="menu-item" id="changePicBtn">Change Picture</div>
+        <div class="menu-item" id="settingsBtn">Profile Settings</div>
+        <div class="menu-item" style="border-top:1px solid #ffffff;color:#ff4444;" id="clearAllSessions">Clear All Sessions</div>
+        <div class="menu-item" style="border-top:1px solid #ffffff;color:#d32f2f;" id="logoutMenu">Logout</div>
+      </div>
+
+      <input type="file" id="changePicInput" accept="image/*" style="display:none;">
+    </header>
+
+    <!-- JOBS MODAL (unchanged) -->
+    <div id="jobsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:flex;justify-content:center;align-items:center;">
+      <div style="background:white;border-radius:22px;padding:30px;width:90%;max-width:440px;box-shadow:0 25px 60px rgba(255,105,180,0.5);text-align:center;">
+        <h2 style="margin:0 0 22px;color:#ff1493;font-size:26px;">Your Jobs / Clients</h2>
+        <input type="text" id="newJobName" placeholder="e.g. Client ABC, Uber, Upwork" style="width:100%;padding:16px;border:2px solid #ff69b4;border-radius:14px;font-size:17px;margin-bottom:12px;box-sizing:border-box;">
+        <button onclick="addJob()" style="width:100%;padding:16px;background:#ff1493;color:white;border:none;border-radius:14px;font-weight:bold;font-size:17px;margin-bottom:20px;">
+          + Add New Job
+        </button>
+        <div id="jobsList" style="max-height:360px;overflow-y:auto;margin:15px 0;padding:0 8px;"></div>
+        <button onclick="closeJobsModal()" style="width:100%;padding:16px;background:#888;color:white;border:none;border-radius:14px;font-weight:bold;">
+          Close
+        </button>
+      </div>
+    </div>
+
+    <!-- AUTH SECTION - UPDATED REGISTER FORM -->
+    <div id="authSection" class="section">
+      <div id="registerForm">
+        <h2 style="text-align:center;color:var(--deep-pink);margin-bottom:25px;">✨ Create Your Account ✨</h2>
+        <div style="text-align:center;margin-bottom:20px;">
+          <label style="font-weight:bold;display:block;margin-bottom:8px;color:#555;">Profile Picture (optional)</label>
+          <input type="file" id="regProfilePic" accept="image/*" style="margin:0 auto 8px auto;max-width:280px;">
+        </div>
+        <input type="text" id="regUsername" placeholder="👤 Username (e.g. johndoe)">
+        <div class="row">
+          <input type="text" id="firstName" placeholder="🧑 First Name">
+          <input type="text" id="lastName" placeholder="🧑 Last Name">
+        </div>
+        <input type="email" id="regEmail" placeholder="📧 Your email">
+        <input type="password" id="regPassword" placeholder="🔒 Password (6+ characters)" minlength="6">
+        <button class="big" id="sendCodeBtn">Send Verification Code</button>
+
+        <div id="regCodeBox" style="display:none;margin-top:20px;">
+          <p style="text-align:center;font-size:15px;color:#555;">Code sent to <strong id="regSentTo"></strong></p>
+          <input type="text" id="regCodeInput" placeholder="Enter 6-digit code" maxlength="6" style="text-align:center;font-size:18px;letter-spacing:8px;">
+          <button class="big" id="verifyRegBtn">Verify Code</button>
+          <button class="big" id="createAccountFinalBtn" style="display:none;">Create Account 💗</button>
+          <button class="big secondary-btn" id="goToLoginFromCodeBtn" style="display:none;">Already have an account? Log in</button>
+          <p style="text-align:center;margin-top:10px;font-size:14px;">Expires in <span id="regTimer">60</span>s • <a href="#" id="resendReg">Resend</a></p>
+        </div>
+
+        <p style="text-align:center;margin-top:25px;color:#666;">
+          Already have an account? <a href="#" id="toLoginFromReg">Log in here</a><br>
+          <a href="#" id="stayOnRegister" style="font-size:0.9em;color:#999">← No, stay on register</a>
+        </p>
+      </div>
+
+      <div id="loginForm" style="display:none;">
+        <h2>Welcome Back</h2>
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button class="big" id="loginBtn">Login</button>
+        <p style="text-align:center;margin-top:15px">
+          <a href="#" id="toResetFromLogin">Forgot password?</a> • 
+          <a href="#" id="toRegisterFromLogin">Create account</a>
+        </p>
+      </div>
+
+      <div id="resetForm" style="display:none;">
+        <h2>Reset Password</h2>
+        <input type="email" id="resetEmail" placeholder="Your email" required>
+        <button class="big" id="sendResetBtn">Send Reset Code</button>
+        <div id="resetCodeBox" style="display:none;">
+          <p>Code sent to <strong id="resetSentTo"></strong></p>
+          <input type="text" id="resetCodeInput" placeholder="Enter 6-digit code" maxlength="6">
+          <input type="password" id="newPassword" placeholder="New password (6+ chars)" minlength="6">
+          <button class="big" id="confirmResetBtn">Change Password</button>
+          <p style="text-align:center;margin-top:10px;">
+            Expires in <span id="resetTimer">60</span>s • <a href="#" id="resendReset">Resend code</a>
+          </p>
+        </div>
+        <p style="text-align:center;margin-top:20px"><a href="#" id="toLoginFromReset">← Back to Login</a></p>
+      </div>
+    </div>
+
+    <!-- MAIN TRACKER + SETTINGS (unchanged) -->
+    <div id="trackerSection" class="section" style="display:none;">
+      <div class="info">
+        <strong>Hourly Rate:</strong> CAD $<span id="payDisplay">25.00</span>
+        <input type="number" id="editPay" placeholder="Update rate" step="0.01">
+        <button id="updatePay">Update</button>
+      </div>
+      <div class="date-picker">
+        <label>Select Work Date</label>
+        <input type="date" id="workDate" style="font-size:20px;padding:12px;width:280px;">
+      </div>
+      <div class="live-timer" id="liveTimer">00:00:00</div>
+      <button class="big" id="clockIn">CLOCK IN NOW</button>
+      <button class="big" id="clockOut" disabled>CLOCK OUT & SAVE</button>
+      <div id="status" style="text-align:center;margin:20px 0;font-weight:bold;font-size:18px;"></div>
+      <div id="earnings"></div>
+      <div id="history"><h3>Recent Sessions</h3><ul id="historyList"></ul><button id="exportCSV">Export All Data</button></div>
+      <div><h3>Weekly Chart</h3><canvas id="hoursChart"></canvas></div>
+      <div class="quote" id="motivationalQuote"></div>
+    </div>
+
+    <div id="profileSettings" style="display:none;">
+      <h2>Profile Settings</h2>
+      <div><label>Username</label><input id="setUsername" type="text"></div>
+      <div><label>First Name</label><input id="setFirstName" type="text"></div>
+      <div><label>Last Name</label><input id="setLastName" type="text"></div>
+      <div><label>Email</label><input id="setEmail" type="email"></div>
+      <div><label>Change profile picture</label><input id="setProfilePic" type="file" accept="image/*"></div>
+      <button id="saveSettingsBtn" style="background:#ff69b4;">Save Changes</button>
+      <button id="cancelSettingsBtn" style="background:#9e9e9e;margin-top:8px;">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Welcome Overlay -->
+  <div id="welcomeOverlay" style="display:none;">
+    <div class="confetti" style="left:5%;animation-delay:0s;"></div>
+    <div class="confetti" style="left:15%;animation-delay:0.2s;"></div>
+    <div class="confetti" style="left:25%;animation-delay:0.4s;"></div>
+    <div class="confetti" style="left:35%;animation-delay:0.6s;"></div>
+    <div class="confetti" style="left:45%;animation-delay:0.8s;"></div>
+    <div class="confetti" style="left:55%;animation-delay:1s;"></div>
+    <div class="confetti" style="left:65%;animation-delay:1.2s;"></div>
+    <div class="confetti" style="left:75%;animation-delay:1.4s;"></div>
+    <div class="confetti" style="left:85%;animation-delay:1.6s;"></div>
+    <div class="confetti" style="left:95%;animation-delay:1.8s;"></div>
+    <h2 id="welcomeName">Welcome!</h2>
+    <p>Congratulations, beautiful! Your account is ready 💕</p>
+    <p>Let's track your work and make that money together!</p>
+    <p style="margin-top:40px;font-size:18px;">Tap anywhere to start ✨</p>
+  </div>
+
+  <script>
+    function toggleMenu(){document.getElementById('menuDropdown').classList.toggle('show')}
+    window.addEventListener('click',e=>{if(!e.target.closest('.hamburger'))document.getElementById('menuDropdown').classList.remove('show')});
+
+    const SERVICE_ID="service_2ll9k4n",TEMPLATE_ID="template_z50u8k8",PUBLIC_KEY="BrfmcM7uilplbhfWM";
+    emailjs.init(PUBLIC_KEY);
+
+    let userData=null,startTime=null,timerInterval=null,selectedDate=new Date().toISOString().split('T')[0];
+    let backgroundTimerInterval = null;
+    let backgroundStartTime = null;
+
+    function tryAutoLogin(){
+      const saved=localStorage.getItem('workTrackerUser');
+      if(saved){
+        try{
+          userData=JSON.parse(saved);
+          const running = localStorage.getItem('runningSession');
+          if(running){
+            const sess = JSON.parse(running);
+            backgroundStartTime = sess.startTime;
+            selectedDate = sess.date;
+            startBackgroundTimer();
+          }
+          if(localStorage.getItem('hasLoggedIn')==='true'){
+            showMainApp();
+            return true;
+          }
+        }catch(e){
+          localStorage.removeItem('workTrackerUser');
+        }
+      }
+      return false;
+    }
+
+    function startBackgroundTimer(){
+      if(backgroundTimerInterval) clearInterval(backgroundTimerInterval);
+      backgroundTimerInterval = setInterval(() => {
+        if(backgroundStartTime){
+          const diff = Math.floor((Date.now() - backgroundStartTime)/1000);
+          const h = String(Math.floor(diff/3600)).padStart(2,'0');
+          const m = String(Math.floor((diff%3600)/60)).padStart(2,'0');
+          const s = String(diff%60).padStart(2,'0');
+          document.getElementById('liveTimer').textContent = `${h}:${m}:${s}`;
+        }
+      }, 500);
+    }
+
+    function stopBackgroundTimer(){
+      if(backgroundTimerInterval){ clearInterval(backgroundTimerInterval); backgroundTimerInterval=null; }
+      localStorage.removeItem('runningSession');
+    }
+
+    function showMainApp(){
+      document.getElementById('authSection').style.display='none';
+      document.getElementById('trackerSection').style.display='block';
+      document.getElementById('profileSettings').style.display='none';
+      document.querySelector('.container').classList.add('logged-in');
+
+      document.getElementById('usernameDisplay').textContent=userData.username||"User";
+      document.getElementById('profilePhoto').src=userData.profilePic||"https://via.placeholder.com/140/ff69b4/white?text=U";
+      document.getElementById('payDisplay').textContent=(userData.hourlyPay||25).toFixed(2);
+      document.getElementById('workDate').value=selectedDate;
+
+      if(backgroundStartTime){
+        startTime = backgroundStartTime;
+        document.getElementById('clockIn').disabled=true;
+        document.getElementById('clockOut').disabled=false;
+        document.getElementById('status').innerHTML=`Clocked in at <strong>${new Date(backgroundStartTime).toLocaleTimeString()}</strong> (continued)`;
+        startLiveTimer();
+        startBackgroundTimer();
+      }
+
+      updateEarningsDisplay();updateHistory();updateChart();showRandomQuote();
+    }
+
+    function startTimer(e,onExpire){let s=60;const el=document.getElementById(e);el.textContent=s;return setInterval(()=>{s--;el.textContent=s;if(s<=0){clearInterval(this);if(onExpire)onExpire()}},1000)}
+
+    function showOnly(f){['registerForm','loginForm','resetForm'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById(f).style.display='block';}
+
+    document.getElementById('toLoginFromReg').onclick=e=>{e.preventDefault();showOnly('loginForm')};
+    document.getElementById('toRegisterFromLogin').onclick=e=>{e.preventDefault();showOnly('registerForm')};
+    document.getElementById('toResetFromLogin').onclick=e=>{e.preventDefault();showOnly('resetForm')};
+    document.getElementById('toLoginFromReset').onclick=e=>{e.preventDefault();showOnly('loginForm')};
+    document.getElementById('stayOnRegister').onclick=e=>e.preventDefault();
+    document.getElementById('resendReg').onclick=e=>{e.preventDefault();document.getElementById('sendCodeBtn').click()};
+
+    // Send Code with duplicate check
+    document.getElementById('sendCodeBtn').onclick=async()=>{ 
+      const firstName=document.getElementById('firstName').value.trim();
+      const lastName=document.getElementById('lastName').value.trim();
+      const email=document.getElementById('regEmail').value.trim().toLowerCase();
+      const password=document.getElementById('regPassword').value;
+      if(!firstName||!lastName||!email||!password) return alert("Please fill all fields");
+
+      const existing = localStorage.getItem('workTrackerUser');
+      if (existing) {
+        const u = JSON.parse(existing);
+        if (u.email === email) {
+          alert("This email is already registered. Please log in with your password instead.");
+          showOnly('loginForm');
+          document.getElementById('loginEmail').value = email;
+          return;
+        }
+      }
+
+      const code=Math.floor(100000+Math.random()*900000).toString();
+      try{
+        await emailjs.send(SERVICE_ID,TEMPLATE_ID,{to_email:email,code});
+        document.getElementById('regSentTo').textContent=email;
+        document.getElementById('regCodeBox').style.display='block';
+        document.getElementById('sendCodeBtn').style.display='none';
+        window.currentRegCode=code;
+        if(window.regTimer)clearInterval(window.regTimer);
+        window.regTimer=startTimer('regTimer',()=>{
+          document.getElementById('regCodeBox').style.display='none';
+          document.getElementById('sendCodeBtn').style.display='block';
+          document.getElementById('verifyRegBtn').style.display='block';
+          document.getElementById('createAccountFinalBtn').style.display='none';
+          document.getElementById('goToLoginFromCodeBtn').style.display='none';
+        });
+        alert("Verification code sent!");
+      }catch(e){
+        alert("Failed to send code – check internet");
+      }
+    };
+
+    // Verify code → show final buttons
+    document.getElementById('verifyRegBtn').onclick = () => {
+      if (document.getElementById('regCodeInput').value !== window.currentRegCode) {
+        return alert("Incorrect code");
+      }
+      document.getElementById('verifyRegBtn').style.display = 'none';
+      document.getElementById('createAccountFinalBtn').style.display = 'block';
+      document.getElementById('goToLoginFromCodeBtn').style.display = 'block';
+    };
+
+    // Final Create Account
+    document.getElementById('createAccountFinalBtn').onclick = () => {
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const username = document.getElementById('regUsername').value.trim() || `${firstName}${lastName}`.toLowerCase();
+      const email = document.getElementById('regEmail').value.trim().toLowerCase();
+      const password = document.getElementById('regPassword').value;
+
+      const existing = localStorage.getItem('workTrackerUser');
+      if (existing && JSON.parse(existing).email === email) {
+        alert("This email is already registered. Please log in with your password instead.");
+        showOnly('loginForm');
+        document.getElementById('loginEmail').value = email;
+        return;
+      }
+
+      const picInput = document.getElementById('regProfilePic');
+      if (picInput && picInput.files && picInput.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = e => finishReg(e.target.result);
+        reader.onerror = () => finishReg("");
+        reader.readAsDataURL(picInput.files[0]);
+      } else finishReg("");
+
+      function finishReg(pic) {
+        userData = {
+          firstName, lastName, username, email, password,
+          profilePic: pic,
+          hourlyPay: 25.00,
+          history: [],
+          jobs: [{ id: 'default', name: 'Main Job', created: Date.now() }]
+        };
+        localStorage.setItem('workTrackerUser', JSON.stringify(userData));
+        localStorage.setItem('hasLoggedIn', 'true');
+        if (window.regTimer) clearInterval(window.regTimer);
+
+        // Show welcome overlay
+        document.getElementById('welcomeName').textContent = `Welcome, ${firstName || username}! 💗`;
+        document.getElementById('welcomeOverlay').style.display = 'flex';
+
+        const hideWelcome = () => {
+          document.getElementById('welcomeOverlay').style.display = 'none';
+          showMainApp();
+        };
+        setTimeout(hideWelcome, 6000);
+        document.getElementById('welcomeOverlay').onclick = hideWelcome;
+      }
+    };
+
+    // Go to login from code screen
+    document.getElementById('goToLoginFromCodeBtn').onclick = () => {
+      showOnly('loginForm');
+      document.getElementById('loginEmail').value = document.getElementById('regEmail').value.trim().toLowerCase();
+    };
+
+    // Login, reset, timer, clock in/out, jobs, AI chat — all your original code below unchanged
+    document.getElementById('loginBtn').onclick=()=>{const email=document.getElementById('loginEmail').value.trim().toLowerCase();const pass=document.getElementById('loginPassword').value;const saved=localStorage.getItem('workTrackerUser');if(!saved)return alert("No account found – please register");const u=JSON.parse(saved);if(u.email===email&&u.password===pass){userData=u;localStorage.setItem('hasLoggedIn','true');showMainApp()}else alert("Wrong email or password")};
+
+    document.getElementById('sendResetBtn').onclick=async()=>{const email=document.getElementById('resetEmail').value.trim().toLowerCase();const saved=localStorage.getItem('workTrackerUser');if(!saved)return alert("No account found");const u=JSON.parse(saved);if(u.email!==email)return alert("No account with that email");const code=Math.floor(100000+Math.random()*900000).toString();try{await emailjs.send(SERVICE_ID,TEMPLATE_ID,{to_email:email,code});document.getElementById('resetSentTo').textContent=email;document.getElementById('resetCodeBox').style.display='block';document.getElementById('sendResetBtn').style.display='none';window.currentResetCode=code;if(window.resetTimer)clearInterval(window.resetTimer);window.resetTimer=startTimer('resetTimer',()=>{document.getElementById('resetCodeBox').style.display='none';document.getElementById('sendResetBtn').style.display='block'});alert("Reset code sent!")}catch(e){alert("Failed to send code")}};
+
+    document.getElementById('confirmResetBtn').onclick=()=>{if(document.getElementById('resetCodeInput').value!==window.currentResetCode)return alert("Wrong code");const newPass=document.getElementById('newPassword').value;if(newPass.length<6)return alert("Password must be at least 6 characters");const saved=JSON.parse(localStorage.getItem('workTrackerUser'));saved.password=newPass;localStorage.setItem('workTrackerUser',JSON.stringify(saved));userData=saved;localStorage.setItem('hasLoggedIn','true');clearInterval(window.resetTimer);alert("Password changed! Logging you in...");showMainApp()};
+
+    document.getElementById('resendReset').onclick=e=>{e.preventDefault();document.getElementById('sendResetBtn').click()};
+
+    document.getElementById('workDate').addEventListener('change',function(){selectedDate=this.value;updateEarningsDisplay()});
+
+    function startLiveTimer(){timerInterval=setInterval(()=>{if(!startTime)return;const diff=Math.floor((Date.now()-startTime)/1000);const h=String(Math.floor(diff/3600)).padStart(2,'0');const m=String(Math.floor((diff%3600)/60)).padStart(2,'0');const s=String(diff%60).padStart(2,'0');document.getElementById('liveTimer').textContent=`${h}:${m}:${s}`},1000)}
+
+    document.getElementById('clockIn').onclick=()=>{
+      if(startTime || backgroundStartTime) return alert("Already clocked in!");
+      startTime = backgroundStartTime = Date.now();
+      localStorage.setItem('runningSession', JSON.stringify({startTime: backgroundStartTime, date: selectedDate}));
+      document.getElementById('status').innerHTML=`Clocked in at <strong>${new Date().toLocaleTimeString()}</strong>`;
+      document.getElementById('clockIn').disabled=true;
+      document.getElementById('clockOut').disabled=false;
+      document.getElementById('liveTimer').textContent="00:00:00";
+      startLiveTimer();
+      startBackgroundTimer();
+    };
+
+    document.getElementById('clockOut').onclick=()=>{
+      if(!startTime && !backgroundStartTime) return;
+      clearInterval(timerInterval);
+      stopBackgroundTimer();
+      const endTime = Date.now();
+      const totalMinutes = Math.round((endTime - (backgroundStartTime || startTime)) / 60000);
+      const breakMinutes = parseInt(prompt(`Total time: ${totalMinutes} min\nEnter break minutes:`,`30`)||0);
+      const workedMinutes = Math.max(totalMinutes - breakMinutes, 0);
+      const hours = workedMinutes / 60;
+      const earnings = hours * (userData.hourlyPay || 25);
+
+      if(!userData.history) userData.history=[];
+      userData.history.push({date:selectedDate, hours, earnings, breakMinutes});
+      localStorage.setItem('workTrackerUser', JSON.stringify(userData));
+
+      document.getElementById('status').innerHTML=`Saved ${hours.toFixed(2)} hrs → CAD $${earnings.toFixed(2)}`;
+      updateEarningsDisplay(); updateHistory(); updateChart();
+
+      startTime = backgroundStartTime = null;
+      document.getElementById('clockIn').disabled=false;
+      document.getElementById('clockOut').disabled=true;
+      document.getElementById('liveTimer').textContent="00:00:00";
+    };
+
+    function updateEarningsDisplay(){const dayData=(userData&&userData.history||[]).filter(e=>e.date===selectedDate);const totalH=dayData.reduce((s,e)=>s+e.hours,0);const totalE=dayData.reduce((s,e)=>s+e.earnings,0);document.getElementById('earnings').innerHTML=totalH>0?`<strong>CAD $${totalE.toFixed(2)}</strong><br>${totalH.toFixed(2)} hours on ${selectedDate}`:`<span style="color:#999">No work logged on ${selectedDate}</span>`}
+
+    function updateHistory(){const list=document.getElementById('historyList');list.innerHTML='';(userData&&userData.history||[]).slice(-10).reverse().forEach(e=>{const li=document.createElement('li');li.innerHTML=`<strong>${e.date}</strong>: ${e.hours.toFixed(2)} hrs → <strong>CAD $${e.earnings.toFixed(2)}</strong>`;list.appendChild(li)})}
+
+    function updateChart(){const ctx=document.getElementById('hoursChart').getContext('2d');const weekly={};(userData&&userData.history||[]).forEach(e=>{const d=new Date(e.date);const weekNum=Math.ceil((d-new Date(d.getFullYear(),0,1))/86400000/7);const key=`Week ${weekNum} ${d.getFullYear()}`;weekly[key]=(weekly[key]||0)+e.hours});if(window.myChart)window.myChart.destroy();window.myChart=new Chart(ctx,{type:'bar',data:{labels:Object.keys(weekly),datasets:[{label:'Hours Worked',data:Object.values(weekly),backgroundColor:'#ff69b4'}]},options:{scales:{y:{beginAtZero:true}}}})};
+
+    function showRandomQuote(){const quotes=["Keep going – every hour counts","Your time = your money","Consistency wins","You're building something great","One more hour, one step closer"];document.getElementById('motivationalQuote').textContent=quotes[Math.floor(Math.random()*quotes.length)]}
+
+    document.getElementById('updatePay').onclick=()=>{const rate=parseFloat(document.getElementById('editPay').value);if(rate>0){userData.hourlyPay=rate;localStorage.setItem('workTrackerUser',JSON.stringify(userData));document.getElementById('payDisplay').textContent=rate.toFixed(2);document.getElementById('editPay').value='';updateEarningsDisplay()}};
+
+    document.getElementById('exportCSV').onclick=()=>{let csv="Date,Hours,Earnings CAD,Break Minutes\n";(userData&&userData.history||[]).forEach(e=>csv+=`${e.date},${e.hours.toFixed(2)},${e.earnings.toFixed(2)},${e.breakMinutes||0}\n`);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='Work_Tracker_History.csv';a.click()};
+
+    document.getElementById('darkModeBtn').onclick=()=>{document.body.classList.toggle('dark');const isDark=document.body.classList.contains('dark');localStorage.setItem('darkMode',isDark);document.getElementById('darkModeBtn').textContent=isDark?"Light Mode":"Dark Mode";toggleMenu()};
+    document.getElementById('changePicBtn').onclick=()=>{document.getElementById('changePicInput').click();toggleMenu()};
+    document.getElementById('changePicInput').onchange=function(){const file=this.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{userData.profilePic=e.target.result;localStorage.setItem('workTrackerUser',JSON.stringify(userData));document.getElementById('profilePhoto').src=userData.profilePic;alert("Profile picture updated!")};r.readAsDataURL(file)};
+    document.getElementById('settingsBtn').onclick=()=>{document.getElementById('trackerSection').style.display='none';document.getElementById('profileSettings').style.display='block';document.getElementById('setUsername').value=userData.username||"";document.getElementById('setFirstName').value=userData.firstName||"";document.getElementById('setLastName').value=userData.lastName||"";document.getElementById('setEmail').value=userData.email||"";toggleMenu()};
+    document.getElementById('cancelSettingsBtn').onclick=()=>{document.getElementById('profileSettings').style.display='none';document.getElementById('trackerSection').style.display='block'};
+    document.getElementById('saveSettingsBtn').onclick=()=>{userData.username=document.getElementById('setUsername').value.trim()||userData.username;userData.firstName=document.getElementById('setFirstName').value.trim()||userData.firstName;userData.lastName=document.getElementById('setLastName').value.trim()||userData.lastName;userData.email=document.getElementById('setEmail').value.trim()||userData.email;const pic=document.getElementById('setProfilePic');if(pic&&pic.files&&pic.files.length>0){const r=new FileReader();r.onload=e=>{userData.profilePic=e.target.result;save()};r.readAsDataURL(pic.files[0])}else save();function save(){localStorage.setItem('workTrackerUser',JSON.stringify(userData));alert('Profile updated!');showMainApp()}};
+
+    document.getElementById('logoutMenu').onclick=()=>{
+      if(confirm('Logout?')){
+        localStorage.setItem('hasLoggedIn','false');
+        location.reload();
+      }
+    };
+
+    document.getElementById('clearAllSessions').onclick = () => {
+      if (confirm('⚠️ This will permanently delete ALL your work sessions forever. Are you sure?')) {
+        if (userData) {
+          userData.history = [];
+          localStorage.setItem('workTrackerUser', JSON.stringify(userData));
+        }
+        updateHistory();
+        updateChart();
+        updateEarningsDisplay();
+        alert('All sessions have been cleared!');
+        toggleMenu();
+      }
+    };
+
+    const originalUpdateHistory = updateHistory;
+    updateHistory = function() {
+      originalUpdateHistory();
+
+      const list = document.getElementById('historyList');
+      list.style.cursor = 'pointer';
+
+      list.querySelectorAll('li').forEach(li => {
+        li.onclick = () => {
+          const dateText = li.querySelector('strong').textContent.trim();
+          if (!dateText) return;
+
+          selectedDate = dateText;
+          document.getElementById('workDate').value = dateText;
+          updateEarningsDisplay();
+
+          list.querySelectorAll('li').forEach(l => l.style.background = '');
+          li.style.background = '#fff0f8';
+
+          const daySessions = (userData.history || []).filter(s => s.date === dateText);
+          if (daySessions.length === 0) return;
+
+          let detail = '<div style="margin-top:10px;padding:12px;background:#fff5fb;border-radius:12px;font-size:15px;">';
+          detail += `<strong>${dateText} – All Sessions</strong><br><br>`;
+          daySessions.forEach((s, i) => {
+            detail += `${i+1}. ${s.hours.toFixed(2)} hrs → CAD $${s.earnings.toFixed(2)}`;
+            if (s.breakMinutes) detail += ` (break: ${s.breakMinutes} min)`;
+            detail += '<br>';
+          });
+          detail += '</div>';
+
+          list.querySelectorAll('.day-detail').forEach(d => d.remove());
+          li.insertAdjacentHTML('afterend', detail);
+        };
+      });
+    };
+
+    if(localStorage.getItem('darkMode')==='true'){document.body.classList.add('dark');document.getElementById('darkModeBtn').textContent="Light Mode"}
+    if(!tryAutoLogin()) showOnly('registerForm');
+
+    let currentJobId = 'default';
+
+    function loadJobs() {
+      if (!userData.jobs || !Array.isArray(userData.jobs)) {
+        userData.jobs = [{ id: 'default', name: 'Main Job', created: Date.now() }];
+      } else {
+        userData.jobs = userData.jobs.map(job => {
+          if (!job.id || job.id === 'default') {
+            return { ...job, id: Date.now().toString() + Math.random() };
+          }
+          return job;
+        });
+      }
+
+      if (!currentJobId || !userData.jobs.find(j => j.id === currentJobId)) {
+        currentJobId = userData.jobs[0].id;
+      }
+
+      renderJobsList();
+      updateJobDisplayInHeader();
+    }
+
+    function saveUserData() {
+      localStorage.setItem('workTrackerUser', JSON.stringify(userData));
+    }
+
+    function addJob() {
+      const name = document.getElementById('newJobName').value.trim();
+      if (!name) return alert('Please enter a job name');
+      userData.jobs.push({ id: Date.now().toString(), name, created: Date.now() });
+      document.getElementById('newJobName').value = '';
+      saveUserData();
+      renderJobsList();
+    }
+
+    function deleteJob(id) {
+      if (!confirm('Delete this job and ALL its sessions forever?')) return;
+
+      userData.jobs = userData.jobs.filter(j => j.id !== id);
+      userData.history = userData.history.filter(s => s.jobId !== id);
+
+      if (currentJobId === id) {
+        currentJobId = userData.jobs[0]?.id || 'default';
+      }
+
+      saveUserData();
+      renderJobsList();
+      updateJobDisplayInHeader();
+      refreshAllDisplays();
+    }
+
+    function selectJob(id) {
+      currentJobId = id;
+      saveUserData();
+      updateJobDisplayInHeader();
+      refreshAllDisplays();
+      closeJobsModal();
+    }
+
+    function renderJobsList() {
+      const container = document.getElementById('jobsList');
+      container.innerHTML = '';
+
+      if (!userData.jobs || userData.jobs.length === 0) {
+        userData.jobs = [{ id: 'default', name: 'Main Job' }];
+        saveUserData();
+      }
+
+      userData.jobs.forEach(job => {
+        const div = document.createElement('div');
+        div.style.cssText = `
+          margin: 12px 0;
+          padding: 18px 20px;
+          background: ${job.id === currentJobId ? '#fff0f8' : '#fff5fb'};
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          cursor: pointer;
+          border: 3px solid ${job.id === currentJobId ? '#ff69b4' : 'transparent'};
+          transition: all 0.3s;
+          position: relative;
+        `;
+
+        div.onclick = () => selectJob(job.id);
+
+        div.innerHTML = `
+          <span style="font-size:18px; font-weight:${job.id === currentJobId ? 'bold' : '600'}; flex:1; text-align:left;">
+            ${job.name}
+          </span>
+          
+          ${userData.jobs.length > 1 ? `
+            <button onclick="event.stopPropagation(); deleteJob('${job.id}')" 
+                    style="background:none;border:none;cursor:pointer;padding:8px;border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ff1744" stroke-width="3" stroke-linecap="round">
+                <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-10 0h14"></path>
+                <path d="M10 11v6M14 11v6M6 6l2 14h8l2-14"></path>
+              </svg>
+            </button>
+          ` : ''}
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    function updateJobDisplayInHeader() {
+      const job = userData.jobs.find(j => j.id === currentJobId) || { name: 'Main Job' };
+      document.getElementById('usernameDisplay').textContent = `${userData.username || 'User'} • ${job.name}`;
+    }
+
+    function closeJobsModal() {
+      document.getElementById('jobsModal').style.display = 'none';
+    }
+
+    function refreshAllDisplays() {
+      updateEarningsDisplay();
+      updateHistory();
+      updateChart();
+    }
+
+    const origUpdateEarnings = updateEarningsDisplay;
+    updateEarningsDisplay = function() {
+      const dayData = (userData.history || []).filter(s => s.jobId === currentJobId && s.date === selectedDate);
+      const totalH = dayData.reduce((a, s) => a + s.hours, 0);
+      const totalE = dayData.reduce((a, s) => a + s.earnings, 0);
+      document.getElementById('earnings').innerHTML = totalH > 0 ?
+        `<strong>CAD $${totalE.toFixed(2)}</strong><br>${totalH.toFixed(2)} hours on ${selectedDate}` :
+        `<span style="color:#999">No hours logged for this job on ${selectedDate}</span>`;
+    };
+
+    const origUpdateHistory = updateHistory;
+    updateHistory = function() {
+      origUpdateHistory();
+      const list = document.getElementById('historyList');
+      list.innerHTML = '';
+      (userData.history || [])
+        .filter(s => s.jobId === currentJobId)
+        .slice(-10).reverse()
+        .forEach(s => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>${s.date}</strong>: ${s.hours.toFixed(2)} hrs → <strong>CAD $${s.earnings.toFixed(2)}</strong>`;
+          list.appendChild(li);
+        });
+    };
+
+    const origUpdateChart = updateChart;
+    updateChart = function() {
+      const weekly = {};
+      (userData.history || [])
+        .filter(s => s.jobId === currentJobId)
+        .forEach(s => {
+          const d = new Date(s.date);
+          const weekNum = Math.ceil((d - new Date(d.getFullYear(), 0, 1)) / 86400000 / 7);
+          const key = `Week ${weekNum} ${d.getFullYear()}`;
+          weekly[key] = (weekly[key] || 0) + s.hours;
+        });
+      const ctx = document.getElementById('hoursChart').getContext('2d');
+      if (window.myChart) window.myChart.destroy();
+      window.myChart = new Chart(ctx, { type: 'bar', data: { labels: Object.keys(weekly), datasets: [{ label: 'Hours', data: Object.values(weekly), backgroundColor: '#ff69b4' }] }, options: { scales: { y: { beginAtZero: true } } } });
+    };
+
+    const realClockOutHandler = () => {
+      if (!startTime && !backgroundStartTime) return;
+      clearInterval(timerInterval); stopBackgroundTimer();
+      const endTime = Date.now();
+      const totalMinutes = Math.round((endTime - (backgroundStartTime || startTime)) / 60000);
+      const breakMinutes = parseInt(prompt(`Total time: ${totalMinutes} min\nEnter break minutes:`, "30") || 0);
+      const workedMinutes = Math.max(totalMinutes - breakMinutes, 0);
+      const hours = workedMinutes / 60;
+      const earnings = hours * (userData.hourlyPay || 25);
+
+      userData.history.push({ jobId: currentJobId, date: selectedDate, hours, earnings, breakMinutes });
+      saveUserData();
+
+      document.getElementById('status').innerHTML = `Saved ${hours.toFixed(2)} hrs → CAD $${earnings.toFixed(2)}`;
+      refreshAllDisplays();
+
+      startTime = backgroundStartTime = null;
+      document.getElementById('clockIn').disabled = false;
+      document.getElementById('clockOut').disabled = true;
+      document.getElementById('liveTimer').textContent = "00:00:00";
+    };
+    document.getElementById('clockOut').onclick = realClockOutHandler;
+
+    document.getElementById('jobsBtn').onclick = () => {
+      document.getElementById('jobsModal').style.display = 'flex';
+      loadJobs();
+      toggleMenu();
+    };
+
+    const origShowMainApp = showMainApp;
+    showMainApp = function() {
+      origShowMainApp();
+      loadJobs();
+    };
+
+    document.getElementById('menuDropdown').classList.remove('show');
+    document.getElementById('jobsModal').style.display = 'none';
+    document.getElementById('aiChatBox').style.display = 'none';
+    document.getElementById('aiBotBtn').innerHTML = 'Sparkles';
+    document.getElementById('aiBotBtn').style.background = '#ff69b4';
+    
+  </script>
+
+  <!-- Floating Pink Button and AI Chat (unchanged) -->
+  <div id="aiBotBtn" style="position:fixed;bottom:25px;right:25px;width:78px;height:78px;background:#ff69b4;border-radius:50%;box-shadow:0 12px 35px rgba(255,105,180,0.6);cursor:pointer;z-index:999;display:flex;align-items:center;justify-content:center;transition:all .3s;font-size:38px;color:white;font-weight:300;" onclick="toggleAIBot()">
+    ✨
+  </div>
+
+  <div id="aiChatBox" style="display:none;position:fixed;bottom:120px;right:25px;width:380px;height:580px;background:rgb(255, 255, 255);border-radius:25px;box-shadow:0 20px 50px rgba(255,105,180,0.5);overflow:hidden;z-index:998;flex-direction:column;">
+    <div style="background:#ff69b4;color:white;padding:20px;text-align:center;font-size:22px;font-weight:bold;">
+      Your Sweet AI Assistant ❤️
+    </div>
+    <div style="padding:20px;text-align:center;color:#ff1493;font-size:18px;">
+      Hi beautiful! Type below or press the mic to talk to me
+    </div>
+    <div id="aiMessages" style="flex:1;overflow-y:auto;padding:10px;background:rgb(255, 255, 255);"></div>
+    <div style="position:absolute;bottom:0;left:0;right:0;background:#fff5fb;border-top:5px solid #ff69b4;padding:15px;display:flex;align-items:center;gap:12px;">
+      <button id="micBtn" style="background:#ff69b4;color:white;border:none;width:56px;height:56px;border-radius:50%;cursor:pointer;font-size:30px;box-shadow:0 5px 15px rgba(255, 250, 250, 0.5);display:flex;align-items:center;justify-content:center;">
+        🎤
+      </button>
+      <button onclick="clearChat()" style="background:#ff1493;color:white;border:none;width:56px;height:56px;border-radius:50%;cursor:pointer;font-size:30px;box-shadow:0 5px 15px rgba(255,20,147,0.5);display:flex;align-items:center;justify-content:center;" title="Clear all messages">
+        🗑️
+      </button>
+      <input type="text" id="aiInput" placeholder="Type your message here beautiful..." style="flex:1;padding:18px;font-size:17px;border:3px solid #ff69b4;border-radius:30px;outline:none;background:rgb(142, 15, 93);box-shadow:inset 0 3px 10px rgba(197, 185, 185, 0.897);color:white !important;" oninput="this.style.color='white'">
+      <button onclick="sendMessage()" style="background:#ff1493;color:white;border:none;width:60px;height:60px;border-radius:50%;cursor:pointer;font-size:32px;box-shadow:0 6px 20px rgba(255,20,147,0.5);display:flex;align-items:center;justify-content:center;">
+        ✈️
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function toggleAIBot() {
+      const box = document.getElementById('aiChatBox');
+      const btn = document.getElementById('aiBotBtn');
+      if (box.style.display === 'none' || !box.style.display) {
+        box.style.display = 'flex';
+        btn.innerHTML = '×'; 
+        btn.style.background = '#ff1493';
+        btn.style.fontSize = '52px';
+        btn.style.fontWeight = '200';
+      } else {
+        box.style.display = 'none';
+        btn.innerHTML = '✨';
+        btn.style.background = '#ff69b4';
+        btn.style.fontSize = '38px';
+      }
+    }
+
+    let recognition;
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      document.getElementById('micBtn').onclick = () => {
+        document.getElementById('micBtn').style.background = '#ff1493';
+        recognition.start();
+      };
+
+      recognition.onresult = (e) => {
+        document.getElementById('aiInput').value = e.results[0][0].transcript;
+        sendMessage();
+      };
+
+      recognition.onend = () => {
+        document.getElementById('micBtn').style.background = '#ff69b4';
+      };
+    }
+
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 0.9;
+        utter.pitch = 1.4;
+        utter.volume = 1;
+        const voices = speechSynthesis.getVoices();
+        const female = voices.find(v => v.lang.includes('en') && (v.name.toLowerCase().includes('female') || v.name.includes('Zira') || v.name.includes('Google UK') || v.name.includes('Samantha') || v.name.includes('Karen')));
+        if (female) utter.voice = female;
+        speechSynthesis.cancel();
+        speechSynthesis.speak(utter);
+      }
+    }
+
+    function clearChat() {
+      if (confirm("Are you sure you want to clear our whole conversation, beautiful?")) {
+        const chat = document.getElementById('aiMessages');
+        chat.innerHTML = '';
+        chat.innerHTML = `<div style="text-align:center;color:#ff69b4;font-size:16px;padding:20px;">Chat cleared! Ready for a fresh start, love.</div>`;
+        setTimeout(() => {
+          chat.innerHTML = '';
+        }, 3000);
+      }
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('aiInput');
+      let msg = input.value.trim();
+      if (!msg) return;
+
+      const chat = document.getElementById('aiMessages');
+      
+      chat.innerHTML += `<div style="text-align:right;margin:15px 10px;"><span style="background:#ff69b4;color:white;padding:14px 22px;border-radius:30px;display:inline-block;max-width:80%;font-size:16px;box-shadow:0 5px 15px rgba(255,105,180,0.4);">${msg}</span></div>`;
+
+      let reply = "Aww, you're so sweet!";
+
+      if (msg.toLowerCase().includes('clock in') || msg.toLowerCase().includes('start')) {
+        document.getElementById('clockIn')?.click();
+        reply = "You're clocked in, beautiful! Go make that money.";
+      } else if (msg.toLowerCase().includes('clock out') || msg.toLowerCase().includes('stop')) {
+        document.getElementById('clockOut')?.click();
+        reply = "Clocked out and saved! You absolutely crushed it today.";
+      } else if (msg.toLowerCase().includes('how much') || msg.toLowerCase().includes('money')) {
+        const earn = document.querySelector('#earnings strong')?.innerText || "nothing yet";
+        reply = `You've earned <strong>${earn}</strong> today, queen! So proud of you.`;
+      } else {
+        const replies = [
+          "You're absolutely stunning, you know that?",
+          "I'm always here for you, beautiful.",
+          "You're such a boss!",
+          "Keep shining bright, love.",
+          "You make my day every time you message me.",
+          "Aww, you're too kind!",
+          "You're going to have an amazing day."
+        ];
+        reply = replies[Math.floor(Math.random() * replies.length)];
+      }
+
+      setTimeout(() => {
+        chat.innerHTML += `<div style="text-align:left;margin:15px 10px;"><span style="background:#ffe4f0;color:#ff1493;padding:14px 22px;border-radius:30px;display:inline-block;max-width:80%;font-size:16px;box-shadow:0 5px 15px rgba(255,20,147,0.3);">${reply}</span></div>`;
+        chat.scrollTop = chat.scrollHeight;
+        speak(reply);
+      }, 800);
+
+      input.value = '';
+      chat.scrollTop = chat.scrollHeight;
+    }
+  </script>
+</body>
+</html>
